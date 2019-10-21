@@ -1,1 +1,2 @@
-# node.js-students-homework
+# node.js-users-homework
+NodeJS homework
