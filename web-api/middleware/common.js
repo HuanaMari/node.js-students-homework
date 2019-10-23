@@ -16,7 +16,7 @@ hendler = (err, req, res, next) => {
             message: err.message
         }
     }
-    res.status(err.status || 500).send(errorObj)
+    res.status(err.status || 500).send(errorObj);
 }
 
 module.exports = {

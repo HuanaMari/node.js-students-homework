@@ -10,8 +10,10 @@ getAllUsers = (req, res) => {
 getSpecUser = (req, res, next) => {
     let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
     let users = JSON.parse(rawdata);
+    
 
-    if (req.params.number == 0) {
+    console.log(req.params.number)
+    if (req.params.number == 0 || req.params.number > users.length) {
         var error = new Error('ne pomalo od 1');
         error.status = 401;
         next(error);
@@ -24,25 +26,27 @@ getSpecUser = (req, res, next) => {
 
     res.status(200).send(currentUser[0]);
 };
-
 createUser = (req, res, next) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
-    let users = JSON.parse(rawdata);
-
-    var boolean = users.some(user => { return user.id == req.body.id })
-    if (boolean) {
-        var error = new Error('ima vakvo id');
-        error.status = 404;
+let isValid = emailValidator(req.body.email);
+    if (!isValid) {
+        var error = new Error('email is not valid');
+        error.status = 402;
         next(error);
     }
     else {
-        users.push(req.body);
-    }
-    let data = JSON.stringify(users, null, 4);
-    fs.writeFileSync(path.join(__dirname, 'student.json'), data);
-    res.status(201).send("User has been created!");
+        let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
+        let users = JSON.parse(rawdata);
 
+
+        users.push(req.body);
+
+        let data = JSON.stringify(users);
+        fs.writeFileSync(path.join(__dirname, 'users.json'), data);
+
+        res.status(201).send("User has been created!");
+    }
 };
+
 updateUser = (req, res) => {
 
     let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
