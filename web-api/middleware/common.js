@@ -12,9 +12,7 @@ routError = (req, res, next) => {
 hendler = (err, req, res, next) => {
     var errorObj = {
         status: err.status,
-        error: {
-            message: err.message
-        }
+        message: err.message
     }
     res.status(err.status || 500).send(errorObj);
 }

@@ -1,5 +1,7 @@
 const path = require('path')
 const fs = require('fs');
+const { emailValidator , ageValidator} = require('../helper');
+
 
 getAllUsers = (req, res) => {
     let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
@@ -10,7 +12,7 @@ getAllUsers = (req, res) => {
 getSpecUser = (req, res, next) => {
     let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
     let users = JSON.parse(rawdata);
-    
+
 
     console.log(req.params.number)
     if (req.params.number == 0 || req.params.number > users.length) {
@@ -26,25 +28,48 @@ getSpecUser = (req, res, next) => {
 
     res.status(200).send(currentUser[0]);
 };
+
+findUserByName = (req, res, next) => {
+    let info = fs.readFileSync(path.join(__dirname, 'student.json'));
+    let users = JSON.parse(info);
+
+    let currentUser = users.filter(user => {
+        var toMatch = user.name === req.params.name
+        return toMatch
+    });
+    if (currentUser.length == 0) {
+        var error = new Error("user does not exist");
+        error.status = 404;
+        next(error);
+    }
+    else {
+        res.status(200).send(currentUser)
+        return currentUser
+    }
+};
 createUser = (req, res, next) => {
-let isValid = emailValidator(req.body.email);
+    let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
+    let users = JSON.parse(rawdata);
+
+    let isValid = emailValidator(req.body.email);
+    
     if (!isValid) {
         var error = new Error('email is not valid');
         error.status = 402;
         next(error);
     }
+    else if (!ageValidator(req.body.age)){
+        var error = new Error('kade ti se roditelite?');
+        error.status = 402;
+        next(error);
+    }
     else {
-        let rawdata = fs.readFileSync(path.join(__dirname, 'users.json'));
-        let users = JSON.parse(rawdata);
-
-
         users.push(req.body);
-
         let data = JSON.stringify(users);
-        fs.writeFileSync(path.join(__dirname, 'users.json'), data);
-
+        fs.writeFileSync(path.join(__dirname, 'student.json'), data);
         res.status(201).send("User has been created!");
     }
+
 };
 
 updateUser = (req, res) => {
@@ -86,7 +111,7 @@ partUpdate = (req, res) => {
     });
 };
 
-deleteUser =  (req, res) => {
+deleteUser = (req, res) => {
     let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
     let users = JSON.parse(rawdata);
     // delete users[req.params.id - 1];
@@ -104,6 +129,7 @@ deleteUser =  (req, res) => {
 module.exports = {
     getAllUsers,
     getSpecUser,
+    findUserByName,
     createUser,
     updateUser,
     partUpdate,
