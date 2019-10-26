@@ -1,33 +1,81 @@
 const path = require('path')
 const fs = require('fs');
-const { emailValidator , ageValidator} = require('../helper');
+const { emailValidator, ageValidator } = require('../helper');
+const connection = require("../dataBase");
 
-
-getAllUsers = (req, res) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
-    let users = JSON.parse(rawdata);
-    res.status(200).send(users);
+getAllUsersQuery = () => {
+    const query = 'SELECT * FROM users'
+    return new Promise((resolve, reject) => {
+        connection.query(query, function (error, results, fields) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
+getAllUsers = async (req, res) => {
+    try {
+        const allUsers = await getAllUsersQuery();
+        res.status(200).send(allUsers);
+    } catch (error) {
+        res.status(500).send(error);
+    }
 };
+// getAllUsers = (req, res) => {
+//     let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
+//     let users = JSON.parse(rawdata);
+//     res.status(200).send(users);
+// };
 
-getSpecUser = (req, res, next) => {
-    let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
-    let users = JSON.parse(rawdata);
 
+getSpecificUserQuery = (id) => {
+    const query = 'SELECT * FROM users WHERE id = ?'
+    return new Promise((resolve, reject) => {
+        connection.query(query, [id], function (error, results, fields) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+}
 
-    console.log(req.params.number)
-    if (req.params.number == 0 || req.params.number > users.length) {
-        var error = new Error('ne pomalo od 1');
+getSpecUser = async (req, res, next) => {
+    if (req.params.id <= 0) {
+        var error = new Error("Id can not be 0!");
         error.status = 401;
         next(error);
     }
-
-    let currentUser = users.filter((obj) => {
-        let selectedUser = obj.id == req.params.number
-        return selectedUser;
-    });
-
-    res.status(200).send(currentUser[0]);
+    try {
+        const specUser = await getSpecificUserQuery(req.params.id);
+        res.status(200).send(specUser[0]);
+    } catch (error) {
+        res.status(500).send(error);
+    }
 };
+
+// getSpecUser = (req, res, next) => {
+//     let rawdata = fs.readFileSync(path.join(__dirname, 'student.json'));
+//     let users = JSON.parse(rawdata);
+
+
+//     console.log(req.params.number)
+//     if (req.params.number == 0 || req.params.number > users.length) {
+//         var error = new Error('ne pomalo od 1');
+//         error.status = 401;
+//         next(error);
+//     }
+
+//     let currentUser = users.filter((obj) => {
+//         let selectedUser = obj.id == req.params.number
+//         return selectedUser;
+//     });
+
+//     res.status(200).send(currentUser[0]);
+// };
 
 findUserByName = (req, res, next) => {
     let info = fs.readFileSync(path.join(__dirname, 'student.json'));
@@ -52,13 +100,13 @@ createUser = (req, res, next) => {
     let users = JSON.parse(rawdata);
 
     let isValid = emailValidator(req.body.email);
-    
+
     if (!isValid) {
         var error = new Error('email is not valid');
         error.status = 402;
         next(error);
     }
-    else if (!ageValidator(req.body.age)){
+    else if (!ageValidator(req.body.age)) {
         var error = new Error('kade ti se roditelite?');
         error.status = 402;
         next(error);
