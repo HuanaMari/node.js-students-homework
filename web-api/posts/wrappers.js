@@ -14,7 +14,7 @@ getAllPostsQuery = () => {
     });
 };
 
-getSpecificPostQuery = async (id) => {
+getSpecificPostQuery = (id) => {
     const query = "SELECT * FROM posts WHERE id = ?";
     return new Promise((resolve, reject) => {
         connection.query(query, [id], (error, results, fields) => {
@@ -25,10 +25,23 @@ getSpecificPostQuery = async (id) => {
             }
         });
     });
-}
+};
 
-createPostQuery = (text, likes) => {
-    const query = "INSERT INTO posts (text,likes,createdOn) VALUES('" + text + "'," + likes + ", NOW() )"
+getPostWithUserIdQuery = (UserId) => {
+    const query = "SELECT * FROM posts JOIN users ON users.id=posts.UserId WHERE users.id=?;";
+    return new Promise((resolve,reject)=>{
+        connection.query(query,[UserId],(error,results,fields)=>{
+            if(error){
+                reject(error)
+            }else{
+                resolve(results)
+            }
+        });
+    });
+};
+
+createPostQuery = (text, likes, UserId) => {
+    const query = "INSERT INTO posts (text,likes,createdOn,UserId) VALUES('" + text + "'," + likes + ", NOW(),'" + UserId + "')"
     return new Promise((resolve, reject) => {
         connection.query(query, (error, results, fields) => {
             if (error) {
@@ -40,10 +53,10 @@ createPostQuery = (text, likes) => {
     })
 };
 
-updatePostQuery = (text,likes,id) => {
+updatePostQuery = (text, likes, id) => {
     const query = "UPDATE posts SET text=?,likes=?,createdOn=NOW() WHERE id=?"
     return new Promise((resolve, reject) => {
-        connection.query(query, [text,likes,id], (error, results, fields) => {
+        connection.query(query, [text, likes, id], (error, results, fields) => {
             if (error) {
                 reject(error)
             } else {
@@ -56,7 +69,7 @@ updatePostQuery = (text,likes,id) => {
 deletePostQuery = (id) => {
     const query = 'DELETE FROM posts WHERE id = ?'
     return new Promise((resolve, reject) => {
-        connection.query(query, [id],  (error, results, fields)=> {
+        connection.query(query, [id], (error, results, fields) => {
             if (error) {
                 reject(error);
             } else {
@@ -69,6 +82,7 @@ deletePostQuery = (id) => {
 module.exports = {
     getAllPostsQuery,
     getSpecificPostQuery,
+    getPostWithUserIdQuery,
     createPostQuery,
     updatePostQuery,
     deletePostQuery

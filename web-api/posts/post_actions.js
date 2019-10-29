@@ -2,6 +2,7 @@ const path = require('path')
 const fs = require('fs');
 const { getAllPostsQuery,
     getSpecificPostQuery,
+    getPostWithUserIdQuery,
     createPostQuery,
     deletePostQuery } = require('./wrappers');
 
@@ -33,9 +34,18 @@ getSpecPost = async (req, res, next) => {
     }
 };
 
+getPostWithUserId = async (req, res, next) => {
+    try {
+        postsFromUser = await getPostWithUserIdQuery(req.params.id)
+        res.status(200).send(postsFromUser)
+    } catch (error) {
+        res.status(500).send(error.message);
+    }
+};
+
 createPost = async (req, res, next) => {
     try {
-        await createPostQuery(req.body.text, req.body.likes);
+        await createPostQuery(req.body.text, req.body.likes, req.body.UserId);
         res.status(200).send('Post has been created');
     } catch (error) {
         res.status(500).send(error.message)
@@ -79,9 +89,9 @@ patchPost = async (req, res, next) => {
             } else {
                 post.text = req.body.text
             }
-            if (req.body.likes == null){
+            if (req.body.likes == null) {
                 post.likes = post.likes
-            }else{
+            } else {
                 post.likes = req.body.likes
             }
         }
@@ -89,7 +99,7 @@ patchPost = async (req, res, next) => {
     });
     let postToPatch = bodyPost[0]
     try {
-        await updatePostQuery(postToPatch.text,postToPatch.likes,req.params.id);
+        await updatePostQuery(postToPatch.text, postToPatch.likes, req.params.id);
         res.status(200).send('Patched succsessfully')
     } catch (error) {
         res.status(500).send(error.message)
@@ -120,6 +130,7 @@ deletePost = async (req, res, next) => {
 module.exports = {
     getAllPosts,
     getSpecPost,
+    getPostWithUserId,
     createPost,
     updatePost,
     patchPost,

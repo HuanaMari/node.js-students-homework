@@ -14,7 +14,7 @@ app.use(bodyParser.json());
 app.use(middleWare.logger);
 
 app.use('/users', users);
-app.use('/posts',posts);
+app.use('/users',posts);
 
 app.use(middleWare.routError);
 app.use(middleWare.hendler);
