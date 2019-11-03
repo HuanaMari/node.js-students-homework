@@ -1,8 +1,9 @@
 var express = require('express');
 require("dotenv/config");
 var bodyParser = require("body-parser");
-var users = require("./users/routes");
-var posts = require("./posts/posts_routes")
+// var users = require("./users/routes");
+// var posts = require("./posts/posts_routes")
+let appRoutes = require('./appRouter')
 
 const app = express();
 
@@ -13,8 +14,9 @@ app.use(bodyParser.json());
 
 app.use(middleWare.logger);
 
-app.use('/users', users);
-app.use('/users',posts);
+app.use(appRoutes);
+// app.use('/users', users);
+// app.use('/users/:id/posts',posts);
 
 app.use(middleWare.routError);
 app.use(middleWare.hendler);

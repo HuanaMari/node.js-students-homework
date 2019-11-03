@@ -1,8 +1,6 @@
-const path = require('path')
-const fs = require('fs');
 const { getAllPostsQuery,
     getSpecificPostQuery,
-    getPostWithUserIdQuery,
+    getPostsWithUserIdQuery,
     createPostQuery,
     deletePostQuery } = require('./wrappers');
 
@@ -15,6 +13,7 @@ getAllPosts = async (req, res, next) => {
         res.status(500).send(error);
     }
 };
+
 
 getSpecPost = async (req, res, next) => {
     const posts = await getAllPostsQuery();
@@ -34,10 +33,26 @@ getSpecPost = async (req, res, next) => {
     }
 };
 
-getPostWithUserId = async (req, res, next) => {
+getPostsWithUserId = async (req, res, next) => {
     try {
-        postsFromUser = await getPostWithUserIdQuery(req.params.id)
-        res.status(200).send(postsFromUser)
+        postsFromUser = await getPostsWithUserIdQuery(req.params.postsId);
+        var postsArray = postsFromUser.map(posts => {
+            return posts = {
+                text: posts.text,
+                likes: posts.likes
+            }
+        });
+        var user = {
+            id: postsFromUser[0].id,
+            name: postsFromUser[0].name,
+            lastname: postsFromUser[0].lastname,
+            posts: postsArray
+        }
+
+      
+        console.log(postsArray)
+
+        res.status(200).send(user)
     } catch (error) {
         res.status(500).send(error.message);
     }
@@ -130,7 +145,7 @@ deletePost = async (req, res, next) => {
 module.exports = {
     getAllPosts,
     getSpecPost,
-    getPostWithUserId,
+    getPostsWithUserId,
     createPost,
     updatePost,
     patchPost,

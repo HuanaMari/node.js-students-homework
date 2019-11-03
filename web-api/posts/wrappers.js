@@ -27,8 +27,8 @@ getSpecificPostQuery = (id) => {
     });
 };
 
-getPostWithUserIdQuery = (UserId) => {
-    const query = "SELECT * FROM posts JOIN users ON users.id=posts.UserId WHERE users.id=?;";
+getPostsWithUserIdQuery = (UserId) => {
+    const query = "SELECT users.id,users.name,users.lastname,posts.UserId,posts.text,posts.likes FROM posts JOIN users ON users.id=posts.UserId WHERE users.id = ?";
     return new Promise((resolve,reject)=>{
         connection.query(query,[UserId],(error,results,fields)=>{
             if(error){
@@ -82,7 +82,7 @@ deletePostQuery = (id) => {
 module.exports = {
     getAllPostsQuery,
     getSpecificPostQuery,
-    getPostWithUserIdQuery,
+    getPostsWithUserIdQuery,
     createPostQuery,
     updatePostQuery,
     deletePostQuery
