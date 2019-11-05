@@ -1,12 +1,14 @@
 const path = require('path')
 const fs = require('fs');
+var bcrypt = require('bcryptjs');
 const { emailValidator, ageValidator } = require('../helper');
 const { getAllUsersQuery,
     getSpecificUserQuery,
     findUserByNameQuery,
     createUserQuery,
     updateUserQuery,
-    deleteUserQuery } = require("./wrappers_Users");
+    deleteUserQuery,
+    getUserByEmailQuery } = require("./wrappers_Users");
 
 
 getAllUsers = async (req, res, next) => {
@@ -39,31 +41,33 @@ findUserByName = async (req, res, next) => {
     }
 };
 createUser = async (req, res, next) => {
-    const users = await getAllUsersQuery();
-    const ifUserExist = users.some(user => {
-        return req.body.email === user.email
-    });
-    let isValid = emailValidator(req.body.email);
-    if (ifUserExist) {
-        var error = new Error('email is already used');
-        error.status = 402;
-        next(error);
-    }
-    else if (!isValid) {
-        var error = new Error('email is not valid');
-        error.status = 402;
-        next(error);
-    }
-    else if (!ageValidator(req.body.age)) {
-        var error = new Error('you are under 18');
-        error.status = 402;
-        return next(error);
-    }
+    // const users = await getAllUsersQuery();
+    // const ifUserExist = users.some(user => {
+    //     return req.body.email === user.email
+    // });
+    // let isValid = emailValidator(req.body.email);
+    // if (ifUserExist) {
+    //     var error = new Error('email is already used');
+    //     error.status = 402;
+    //     next(error);
+    // }
+    // else if (!isValid) {
+    //     var error = new Error('email is not valid');
+    //     error.status = 402;
+    //     next(error);
+    // }
+    // else if (!ageValidator(req.body.age)) {
+    //     var error = new Error('you are under 18');
+    //     error.status = 402;
+    //     return next(error);
+    // }
     try {
-        await createUserQuery(req.body.name, req.body.lastname, req.body.email, req.body.age, req.body.isActive);
+        const userRequest = req.body
+        const passHash = bcrypt.hashSync(userRequest.password, 10)
+        await createUserQuery(userRequest, passHash)
         res.status(200).send('User has been created');
     } catch (error) {
-        res.status(500).send(error)
+        res.status(500).send(error.message)
     }
 
 };
@@ -148,6 +152,7 @@ partUpdate = async (req, res, next) => {
         res.status(500).send(error.message);
     }
 };
+
 deleteUser = async (req, res, next) => {
     try {
         await deleteUserQuery(req.params.number);
@@ -158,6 +163,21 @@ deleteUser = async (req, res, next) => {
     }
 }
 
+loginUser = async (req, res, next) => {
+    const email = req.body.email;
+    const pass = req.body.password;
+    try {
+        var user = await getUserByEmailQuery(email);
+        var newUser = user[0];
+        const matchPass = bcrypt.compare(pass,newUser.password);
+        if (matchPass) {
+            res.status(202).send('password match');
+        }
+    }
+    catch (error) {
+        res.status(401).send("wrong password");
+    }
+}
 module.exports = {
     getAllUsers,
     getSpecUser,
@@ -165,5 +185,6 @@ module.exports = {
     createUser,
     updateUser,
     partUpdate,
-    deleteUser
+    deleteUser,
+    loginUser
 }

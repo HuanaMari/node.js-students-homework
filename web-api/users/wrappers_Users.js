@@ -39,10 +39,10 @@ findUserByNameQuery = (name) => {
     })
 };
 
-createUserQuery = (name, lastname, email, age, isActive) => {
-    const query = "INSERT INTO users (name,lastname,email,age,isActive) VALUES('" + name + "','" + lastname + "','" + email + "'," + age + "," + isActive + ")"
+createUserQuery = (user,password) => {
+    const query = 'INSERT INTO users(name, lastname, email, age, IsActive,password) VALUES (?, ?, ?, ?, ?, ?)';
     return new Promise((resolve, reject) => {
-        connection.query(query, (error, results, fields) => {
+        connection.query(query,[user.name,user.lastname,user.email,user.age,user.isActive,password],(error, results, fields) => {
             if (error) {
                 reject(error)
             } else {
@@ -78,11 +78,25 @@ deleteUserQuery = (id) => {
     });
 }
 
+getUserByEmailQuery = (email) => {
+    const query = 'SELECT * FROM users WHERE email = ?'
+    return new Promise((resolve, reject) => {
+        connection.query(query, [email], function (error, results, fields) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve(results);
+            }
+        });
+    });
+};
+
 module.exports = {
     getAllUsersQuery,
     getSpecificUserQuery,
     findUserByNameQuery,
     createUserQuery,
     updateUserQuery,
-    deleteUserQuery
+    deleteUserQuery,
+    getUserByEmailQuery
 }
