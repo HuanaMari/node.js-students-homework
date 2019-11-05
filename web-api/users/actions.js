@@ -169,13 +169,16 @@ loginUser = async (req, res, next) => {
     try {
         var user = await getUserByEmailQuery(email);
         var newUser = user[0];
-        const matchPass = bcrypt.compare(pass,newUser.password);
+        const matchPass = bcrypt.compareSync(pass,newUser.password);
         if (matchPass) {
             res.status(202).send('password match');
         }
+        else{
+            res.status(401).send("wrong password");
+        }
     }
     catch (error) {
-        res.status(401).send("wrong password");
+        res.status(500).send(error.message);
     }
 }
 module.exports = {
