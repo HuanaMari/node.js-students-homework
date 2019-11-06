@@ -1,14 +1,16 @@
 const path = require('path')
 const fs = require('fs');
 var bcrypt = require('bcryptjs');
+var jwt = require('jsonwebtoken');
+
 const { emailValidator, ageValidator } = require('../helper');
 const { getAllUsersQuery,
-    getSpecificUserQuery,
-    findUserByNameQuery,
-    createUserQuery,
-    updateUserQuery,
-    deleteUserQuery,
-    getUserByEmailQuery } = require("./wrappers_Users");
+        getSpecificUserQuery,
+        findUserByNameQuery,
+        createUserQuery,
+        updateUserQuery,
+        deleteUserQuery,
+        getUserByEmailQuery } = require("./wrappers_Users");
 
 
 getAllUsers = async (req, res, next) => {
@@ -169,11 +171,12 @@ loginUser = async (req, res, next) => {
     try {
         var user = await getUserByEmailQuery(email);
         var newUser = user[0];
-        const matchPass = bcrypt.compareSync(pass,newUser.password);
+        const matchPass = bcrypt.compareSync(pass, newUser.password);
         if (matchPass) {
-            res.status(202).send('password match');
+            var token = jwt.sign({ newUser }, 'macePace', { expiresIn: '1h' });
+            res.status(202).send(token);
         }
-        else{
+        else {
             res.status(401).send("wrong password");
         }
     }
