@@ -16,6 +16,7 @@
     "body-parser": "^1.19.0",
     "express": "^4.17.1",
     "express-jwt": "^5.3.1",
+    "express-unless": "^0.5.0",
     "jsonwebtoken": "^8.5.1",
     "mysql": "github:mysqljs/mysql",
     "randomstring": "^1.1.5"

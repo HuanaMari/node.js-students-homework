@@ -3,6 +3,8 @@ require("dotenv/config");
 var bodyParser = require("body-parser");
 // var users = require("./users/routes");
 // var posts = require("./posts/posts_routes")
+var jwt = require('express-jwt');
+var unless = require('express-unless');
 let appRoutes = require('./appRouter')
 
 const app = express();
@@ -11,6 +13,9 @@ const middleWare = require('./middleware/common');
 
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json());
+
+const publicRoute = ['/login']
+app.use(jwt({ secret: 'macePace'}).unless({path: publicRoute}));
 
 app.use(middleWare.logger);
 
